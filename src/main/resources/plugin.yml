@@ -1,4 +1,8 @@
-name: wwtshop
+name: wwt
 version: '1.0-SNAPSHOT'
-main: wwt.shop
+main: wwt.WwtShop
 api-version: '1.21'
+commands:
+  wwt:
+    description: Root command for wwt.
+    usage: /wwt <subcomand>

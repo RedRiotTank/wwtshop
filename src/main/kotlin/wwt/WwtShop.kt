@@ -2,12 +2,16 @@ package wwt
 
 import org.bukkit.plugin.java.JavaPlugin
 import wwt.func.UI
+import wwt.func.WwtAuth
+import wwt.websocket.ApiSocket
+import wwt.websocket.WwtApi
 
 class WwtShop : JavaPlugin() {
 
-    private var ui = UI()
-    private var commandExecutor = WwtCommandExecutor(ui)
-
+    private val wwtApi: WwtApi = ApiSocket()
+    private val wwtAuth = WwtAuth(wwtApi)
+    private val ui = UI()
+    private val commandExecutor = WwtCommandExecutor(ui)
 
     companion object {
         lateinit var instance: WwtShop
@@ -15,12 +19,19 @@ class WwtShop : JavaPlugin() {
 
     override fun onEnable() {
         instance = this
+
+        saveDefaultConfig()
+        Config.initialize(config, this)
+        wwtAuth.generateServerUuidIfNull()
+
         this.getCommand("wwt")?.setExecutor(commandExecutor)
         this.getCommand("wwt")?.tabCompleter = commandExecutor
+
+        server.pluginManager.registerEvents(wwtAuth, this)
         server.pluginManager.registerEvents(ui, this)
     }
 
     override fun onDisable() {
-        // Plugin shutdown logic
+        TODO("No need to implement this method")
     }
 }

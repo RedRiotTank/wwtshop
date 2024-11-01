@@ -14,6 +14,8 @@ import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import wwt.sendWwtMessage
+import wwt.websocket.ApiSocket
+import wwt.websocket.WwtApi
 import java.util.*
 
 class UI : Listener {
@@ -27,6 +29,8 @@ class UI : Listener {
     private val filler = ItemStack(Material.RED_STAINED_GLASS_PANE)
 
     private val sellInventories = mutableMapOf<UUID, Inventory>()
+
+    private val wwtApi : WwtApi = ApiSocket()
 
     fun openSellInventory(player: Player) {
         val inventory = createSellInventory()

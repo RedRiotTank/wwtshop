@@ -78,16 +78,12 @@ class UI(
         currentPrice: Int,
         playerId: Int?
     ) {
-        event.whoClicked.sendWwtMessage("entered handleOkSlot")
         val item = sellInventories[inventoryUUID]?.getItem(itemSlot)
         if (item != null) {
-            event.whoClicked.sendWwtMessage("item is not null")
             CoroutineScope(Dispatchers.IO).launch {
                 val itemId = wwtApi.createItem(item)
-                event.whoClicked.sendWwtMessage("itemId: $itemId")
-                if (itemId != 0) {
-                    event.whoClicked.sendWwtMessage("sending offer")
-                    val resultOffer = wwtApi.creatteOffer(
+                if (itemId != null) {
+                    val resultOffer = wwtApi.createOffer(
                         OfferServerData(
                             id = 0,
                             price = currentPrice,
@@ -96,8 +92,6 @@ class UI(
                             item = itemId
                         )
                     )
-
-                    event.whoClicked.sendWwtMessage("resultOffer: $resultOffer")
 
                     WwtShop.instance.server.scheduler.runTask(WwtShop.instance, Runnable {
                         if (resultOffer) {

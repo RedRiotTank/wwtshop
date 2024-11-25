@@ -29,11 +29,12 @@ class WwtAuth(
 
             val playerServerData = wwtApi.getUserByPlayerUUIDAndServerUUID(event.player)
 
-            if (playerServerData.id == 0){
+            if (playerServerData == null) {
                 val result = wwtApi.registerPlayer(event.player)
 
+
                 WwtShop.instance.server.scheduler.runTask(WwtShop.instance, Runnable {
-                    if (result.id != 0) {
+                    if (result != null) {
                         playerIdMap[event.player.uniqueId] = result.id
                         event.player.sendWwtMessage("Registered in World Wide Trade")
                     } else event.player.sendWwtMessage("Unexpected error: failed to join the World Wide Trade")

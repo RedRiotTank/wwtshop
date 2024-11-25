@@ -27,22 +27,21 @@ class ApiSocket : WwtApi {
         }
     }
 
-    override suspend fun getUserByPlayerUUIDAndServerUUID(player: Player): PlayerServerData {
+    override suspend fun getUserByPlayerUUIDAndServerUUID(player: Player): PlayerServerData? {
         try {
             val response: HttpResponse = client.get("${apiUrl}users/getUserByPlayerUUIDAndServerUUID?playerUUID=${player.uniqueId}&serverUUID=${Config.getServerUuid()}")
 
-            return if (response.status == HttpStatusCode.NotFound)
-                PlayerServerData(0, player.uniqueId.toString(), Config.getServerUuid().toString(), 0)
+            return if (response.status == HttpStatusCode.NotFound) null
             else gson.fromJson(response.bodyAsText(), PlayerServerData::class.java)
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        return PlayerServerData(0, player.uniqueId.toString(), Config.getServerUuid().toString(), 0)
+        return null
     }
 
-    override suspend fun registerPlayer(player: Player) : PlayerServerData {
+    override suspend fun registerPlayer(player: Player) : PlayerServerData? {
         try {
             val requestBody = PlayerServerData(0, player.uniqueId.toString(), Config.getServerUuid().toString(), 0)
 
@@ -53,16 +52,16 @@ class ApiSocket : WwtApi {
 
             return if (response.status == HttpStatusCode.OK)
                 gson.fromJson(response.bodyAsText(), PlayerServerData::class.java)
-            else PlayerServerData(0, player.uniqueId.toString(), Config.getServerUuid().toString(), 0)
+            else null
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        return PlayerServerData(0, player.uniqueId.toString(), Config.getServerUuid().toString(), 0)
+        return null
     }
 
-    override suspend fun createItem(itemStack: ItemStack): Int {
+    override suspend fun createItem(itemStack: ItemStack): Int? {
         try {
             val requestBody = ItemServerData(null,itemStack.type.toString())
 
@@ -73,16 +72,16 @@ class ApiSocket : WwtApi {
 
             return if (response.status == HttpStatusCode.OK)
                 gson.fromJson(response.bodyAsText(), ItemServerData::class.java).id?: 0
-            else 0
+            else null
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        return 0
+        return null
     }
 
-    override suspend fun creatteOffer(offerServerData: OfferServerData): Boolean {
+    override suspend fun createOffer(offerServerData: OfferServerData): Boolean {
         try {
             val response: HttpResponse = client.post("${apiUrl}offers/createOffer") {
                 contentType(ContentType.Application.Json)

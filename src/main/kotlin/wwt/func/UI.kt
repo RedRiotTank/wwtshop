@@ -1,5 +1,8 @@
 package wwt.func
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -13,12 +16,16 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
+import wwt.WwtShop
+import wwt.dto.OfferServerData
 import wwt.sendWwtMessage
 import wwt.websocket.ApiSocket
 import wwt.websocket.WwtApi
 import java.util.*
 
-class UI : Listener {
+class UI(
+    private val wwtAuth: WwtAuth
+) : Listener {
     private val itemSlot = 11
     private val okSlot = 18
     private val cancelSlot = 26
@@ -41,6 +48,7 @@ class UI : Listener {
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         val inventoryUUID = sellInventories.entries.find { it.value == event.inventory }?.key
+        val playerId = wwtAuth.getPlayerId(event.whoClicked.uniqueId)
 
         if (inventoryUUID != null) {
             val clickedSlot = event.slot
@@ -56,34 +64,58 @@ class UI : Listener {
                     itemSlot -> event.isCancelled = false
                     upSlot -> updatePrice(event, currentPrice + 1)
                     downSlot -> updatePrice(event, maxOf(currentPrice - 1, 1))
-                    okSlot -> {
-                        if (sellInventories[inventoryUUID]?.getItem(itemSlot) == null) {
-                            event.whoClicked.sendWwtMessage("You can not confirm sell without an item in the slot")
-                            event.isCancelled = true
-                            return
-                        }
-
-                        event.whoClicked.sendWwtMessage("You sold the item for $currentPrice")
-                        sellInventories[inventoryUUID]?.setItem(itemSlot, null)
-                        event.whoClicked.closeInventory()
-                        event.isCancelled = true
-                    }
-                    cancelSlot -> {
-                        if (sellInventories[inventoryUUID]?.getItem(itemSlot) != null) {
-                            event.whoClicked.sendWwtMessage("You can not cancel the sell with item in the slot")
-                            event.isCancelled = true
-                            return
-                        }
-
-                        event.whoClicked.sendWwtMessage("You canceled the sell")
-                        event.whoClicked.closeInventory()
-                        event.isCancelled = true
-                    }
+                    okSlot -> handleOkSlot(event, inventoryUUID, currentPrice, playerId)
+                    cancelSlot -> cancelSell(event, inventoryUUID)
                     else -> event.isCancelled = true
                 }
             }
         }
     }
+
+    private fun handleOkSlot(
+        event: InventoryClickEvent,
+        inventoryUUID: UUID,
+        currentPrice: Int,
+        playerId: Int?
+    ) {
+        val item = sellInventories[inventoryUUID]?.getItem(itemSlot)
+        if (item != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val itemId = wwtApi.createItem(item)
+                if (itemId != null) {
+                    val resultOffer = wwtApi.createOffer(
+                        OfferServerData(
+                            id = 0,
+                            price = currentPrice,
+                            count = item.amount,
+                            user = playerId ?: 0,
+                            item = itemId
+                        )
+                    )
+
+                    WwtShop.instance.server.scheduler.runTask(WwtShop.instance, Runnable {
+                        if (resultOffer) {
+                            event.whoClicked.sendWwtMessage("Item added to the market")
+                        } else {
+                            event.whoClicked.sendWwtMessage("Unexpected error: failed to add item to the market")
+                        }
+                    })
+                } else {
+                    WwtShop.instance.server.scheduler.runTask(WwtShop.instance, Runnable {
+                        event.whoClicked.sendWwtMessage("Unexpected error: failed to add item to the market")
+                    })
+                }
+            }
+        } else {
+            event.whoClicked.sendWwtMessage("You cannot confirm sell without an item in the slot")
+            event.isCancelled = true
+        }
+
+        sellInventories[inventoryUUID]?.setItem(itemSlot, null)
+        event.whoClicked.closeInventory()
+        event.isCancelled = true
+    }
+
 
     @EventHandler
     fun onInventoryClose(event: InventoryCloseEvent) {
@@ -125,6 +157,18 @@ class UI : Listener {
 
     private fun updatePrice(event: InventoryClickEvent, newPrice: Int) {
         event.inventory.setItem(priceSlot, createItemStack(Material.EMERALD, "Current price: $newPrice"))
+        event.isCancelled = true
+    }
+
+    private fun cancelSell(event: InventoryClickEvent, inventoryUUID: UUID) {
+        if (sellInventories[inventoryUUID]?.getItem(itemSlot) != null) {
+            event.whoClicked.sendWwtMessage("You can not cancel the sell with item in the slot")
+            event.isCancelled = true
+            return
+        }
+
+        event.whoClicked.sendWwtMessage("You canceled the sell")
+        event.whoClicked.closeInventory()
         event.isCancelled = true
     }
 }

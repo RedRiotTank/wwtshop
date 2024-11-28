@@ -10,7 +10,7 @@ class WwtShop : JavaPlugin() {
 
     private val wwtApi: WwtApi = ApiSocket()
     private val wwtAuth = WwtAuth(wwtApi)
-    private val ui = UI()
+    private val ui = UI(wwtAuth)
     private val commandExecutor = WwtCommandExecutor(ui)
 
     companion object {

@@ -9,7 +9,17 @@ This plugin will provide players with an inventory-based user interface that wil
 To install World Wide Trade Shop on your Minecraft server you just have to copy the "wwtshop-version.jar" file to your "/plugins" folder. Once you run the server with the plugin inside for the first time, it will generate a wwtshop/ folder where you can find the configuration file for the plugin.
 
 ## Commands
-On build...
+- **/wwt help**: To obtain a text with information about how to use the plugin.
+ 
+  <img width="844" alt="{A8E1B32F-1A4A-41D6-AA4C-3680CC8BDA88}" src="https://github.com/user-attachments/assets/d7df53f9-5b21-4685-911f-a77003656602">
+
+- **/wwt sell**: Opens the sell interface.
+
+  <img width="468" alt="{A0AACFD6-DA4A-453B-9352-625EA9313E38}" src="https://github.com/user-attachments/assets/4071e061-7671-4dc2-8b66-f2cf8d449c99">
+
+    In the photograph, you can see the selling interface, which has a slot in the center where you can place the item you want to sell (in this case, diamonds). You can check the item's price on the emerald, and you can increase or decrease this price using the up or down arrows. At the bottom right, you can cancel the process, while the totem at the bottom         left allows you to confirm the sale. Once you confirm, the item will disappear from your inventory, and the selling interface will close.
+
+- **/wwt buy**: On build.
 
 ## Permissions
 On build...

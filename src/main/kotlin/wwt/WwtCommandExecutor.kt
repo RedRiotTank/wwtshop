@@ -26,8 +26,11 @@ class WwtCommandExecutor(
 
         when (args[0].lowercase()) {
             "shop" -> {
-                sender.sendWwtMessage("Opening shop menu...")
+                val page = if (args.size > 1) {
+                    args[1].toIntOrNull() ?: 0
+                } else 0
 
+                ui.openShopInventory(sender as Player, page)
             }
             "sell" -> {
                 ui.openSellInventory(sender as Player)
@@ -37,7 +40,6 @@ class WwtCommandExecutor(
             }
             else -> {
                 Help().sendHelpMessage(sender)
-
             }
         }
         return true

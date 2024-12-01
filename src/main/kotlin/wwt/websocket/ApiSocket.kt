@@ -12,9 +12,8 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import wwt.Config
-import wwt.dto.ItemServerData
-import wwt.dto.OfferServerData
-import wwt.dto.PlayerServerData
+import wwt.dto.*
+import java.util.*
 
 class ApiSocket : WwtApi {
 
@@ -93,6 +92,41 @@ class ApiSocket : WwtApi {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        return false
+    }
+
+    override suspend fun getPaginatedOffers(page: Int): List<OfferResponseServerData> {
+        try {
+            val response: HttpResponse = client.get("${apiUrl}offers/getPaginatedOffers?page=$page")
+
+            return if (response.status == HttpStatusCode.OK)
+                gson.fromJson(response.bodyAsText(), Array<OfferResponseServerData>::class.java).toList()
+            else emptyList()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return emptyList()
+    }
+
+    override suspend fun confirmOffer(offerId: Int, userId: Int): Boolean {
+        try {
+            val response: HttpResponse = client.post("${apiUrl}offers/confirmOffer") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(ConfirmOfferServerData(offerId, userId)))
+            }
+
+
+            if (response.status == HttpStatusCode.OK) {
+                val responseBody = response.bodyAsText()
+                return gson.fromJson(responseBody, Boolean::class.java)
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         return false
     }
 }

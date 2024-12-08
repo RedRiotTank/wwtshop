@@ -213,8 +213,15 @@ class UI(
 
     private fun handleBuyInventoryClick(event: InventoryClickEvent) {
         val buyInventoryUUID = buyInventories.entries.find { it.value == event.inventory }?.key
+        if (event.clickedInventory == event.whoClicked.inventory) return
+
         if (buyInventoryUUID != null) {
             var clickedSlot = event.slot
+
+            if (event.clickedInventory?.getItem(clickedSlot) == null) {
+                event.isCancelled = true
+                return
+            }
 
 
             if (

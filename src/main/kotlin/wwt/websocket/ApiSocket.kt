@@ -17,7 +17,8 @@ import java.util.*
 
 class ApiSocket : WwtApi {
 
-    private var apiUrl = "http://192.168.1.142:8080/wwtapi/"
+    //private var apiUrl = "http://192.168.1.142:8080/wwtapi/"
+    private var apiUrl = "https://wwtapi-195174254625.europe-central2.run.app/wwtapi/"
     private val gson = Gson()
 
     private val client = HttpClient(CIO) {
